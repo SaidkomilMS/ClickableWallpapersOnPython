@@ -2,22 +2,15 @@
     "version": "v1.0",
     "weather": [
         [
-            "Самара",
-            "https://www.gismeteo.ru/weather-samara-4618/"
+            "Ташкент",
+            "https://www.gismeteo.ru/weather-tashkent-5331/"
         ],
         [
-            "Тольятти",
-            "https://www.gismeteo.ru/weather-tolyatti-4429/"
-        ],
-        [
-            "Москва",
-            "https://www.gismeteo.ru/weather-moscow-4368/"
+            "Газалкент",
+            "https://www.gismeteo.ru/weather-gazalkent-323436/"
         ]
     ],
     "weatherIndex": 0,
-    "themeIndex": 0,
-    "courses": [
-        "USD",
-        "EUR"
-    ]
+    "themeIndex": 3,
+    "courses": "USD"
 }

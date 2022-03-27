@@ -71,15 +71,19 @@ cache = Cache()
 class Course:
     
     def getJsonData():
-        url = 'https://www.cbr-xml-daily.ru/daily_json.js'
-        return requests.get(url, headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}).json()
+        url = 'https://mobile.unired.uz/api/info/rate'
+        return requests.get(url).json()
     
     def getCourse(args):
         try:
             data = Course.getJsonData()
-            tbl = []
-            for i in args:
-                tbl.append( (i.upper(), round(data['Valute'][ i.upper() ]['Value'], 2)))
+            course = [i for i in data['data'] if i ['code_name'] == args][0]
+            keys = {
+                'cb': "ЦБ",
+                'buy': "Купля",
+                'sell': 'Продажа'
+            }
+            tbl = [(keys[key], course['rate'][key]) for key in course['rate']] 
             return tbl
         except:
             return False
@@ -88,9 +92,8 @@ class Weather:
     
     def getCitys():
         return cache.get('weather', [
-            ['Самара', 'https://www.gismeteo.ru/weather-samara-4618/'],
-            ['Тольятти', 'https://www.gismeteo.ru/weather-tolyatti-4429/'],
-            ['Москва', 'https://www.gismeteo.ru/weather-moscow-4368/']
+            ['Ташкент', 'https://www.gismeteo.ru/weather-tashkent-5331/'],
+            ['Газалкент', 'https://www.gismeteo.ru/weather-gazalkent-323436/']
         ])
     
     city = getCitys()[ cache.get('weatherIndex', 0) ]
@@ -229,6 +232,11 @@ class Main():
         self.draw.text((x, y), text, font = self.font, fill = color)
         w, h = self.getTextSize( text )
         return Cord(x, y, w, h)
+    
+    def setTextReverse(self, x, y, text, color = (255, 255, 255),):
+        w, h = self.getTextSize( text )
+        print()
+        return self.setText(self.weight - x - w, self.height - y - h - 48, text, color)
         
     def setMindText(self, x, y, text, color = (255, 255, 255)):
         w, h = self.getTextSize( text )
@@ -305,22 +313,24 @@ class Main():
         
         self.setFont( 'font.ttf', 20 )
         w1, h1 = self.getTextSize('Сменить тему')
-        s = self.setText( self.weight - 5 - w1, self.height - 48 - h1, 'Сменить тему', theme['fg'])
+        s = self.setText(  5 , self.height - 48 - h1, 'Сменить тему', theme['fg'])
         self.addButton(s, lambda: newTheme(), True)
         
         if not self.openCitys:
             self.setFont( 'font.otf', 40 )
             if self.weather:
-                s = self.setText(5, 5, str(self.weather[0]), theme['text'])
+                s = self.setTextReverse(5, 5, f'{str(self.weather[1])}° {str(self.weather[2])}', theme['text'])
+                s = self.setTextReverse(5, s.h + 10, str(self.weather[0]), theme['text'])
                 self.addButton(s, cityBtn, True)
-                self.setText(5, s.y2 + 5, f'{str(self.weather[1])}° {str(self.weather[2])}', theme['text'])
         else:
             self.setFont( 'font.ttf', 25 )
-            s = self.setText(5, 5, 'Выберите населённый пункт', theme['fg'])
             tbl = Weather.getCitys()
+            heights = 0
             for i in range(len(tbl)):
-                s = self.setText(10, s.y2 + 5, tbl[i][0], theme['text'])  
+                s = self.setTextReverse(10, heights + 5 + (5*i), tbl[i][0], theme['text'])
+                heights += s.h
                 self.addButton(s, lambda index = i: setCity(index), True)
+            s = self.setTextReverse(5, heights + 10 + (5*i), 'Выберите населённый пункт', theme['fg'])
         
         
         self.object.save('resources/tmp/temp.png')
@@ -330,7 +340,7 @@ class Main():
 
     def start(self):
         while True:
-            self.courses = Course.getCourse(cache.get('courses',  ['USD', 'EUR']))
+            self.courses = Course.getCourse(cache.get('courses',  'USD'))
             self.weather = Weather.getData()
             self.update(  )
             
@@ -338,8 +348,17 @@ class Main():
                 if self.onUpdate():
                     self.update(  )
                 time.sleep(0.1)
+
+
+def main():
+    while True:
+        try:
+            Main().start()
+        except KeyboardInterrupt:
+            sys.exit(1)
+        except Exception:
+            continue
             
         
 if __name__ == "__main__":
-    main = Main()
-    main.start()
+    main()
